@@ -1,0 +1,17 @@
+function[x] = Conjugate_Gradient(A, b, n_iter)
+	[row, col] = size(D);
+	x = zeros(row, 1);
+	d = b - A * x;
+	r = d;
+	zero = zeros(row, 1); % 全0矩阵
+
+    for i = 1 : n_iter
+		if r == zero
+			break
+		end
+		a = (r' * r) / (d' * A * d);
+		x = x + a * d;
+		r = r - a * A * d;
+		beta = (r' * r) / (r' * r);
+		d = r + beta * d;
+    end
