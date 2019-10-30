@@ -1,0 +1,14 @@
+function c = newtdd(x, y, n)
+% Obtain Newton Triangle
+for j = 1:n 
+v(j,1) = y(j); % f[xj]
+end 
+for i = 2:n 
+for j = 1:n+1-i  	
+v(j,i) = (v(j+1,i-1)-v(j,i-1))/(x(j+i-1)-x(j));
+end 
+End
+% Obtain the coefficients  
+for i = 1:n 
+c(i) = v(1,i); % Read along top of triangle 
+end 

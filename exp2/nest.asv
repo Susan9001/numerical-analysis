@@ -1,0 +1,4 @@
+function y = nest(d, c, n, x, xi)
+    % Compute value y of polynomial at x
+    % d: array of d bas points
+    y = c(d+1); % 
