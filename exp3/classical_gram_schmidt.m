@@ -1,9 +1,9 @@
 function [Q, R] = classical_gram_schmidt(A)
-    [row, col] = size(A);
-    Q = zeros(row, col);
-    R = zeros(col, col);
+    [m, n] = size(A);
+    Q = zeros(m, n);
+    R = zeros(n, n);
     
-    for j = 1:col
+    for j = 1:n
         y = A(:, j);
         for i = 1:(j-1)
             R(i, j) = Q(:, i)' * A(:, j);
