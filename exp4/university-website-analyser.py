@@ -25,6 +25,7 @@ class UniversityWebsiteAnalyser:
     def set_target_website(self, target_website):
         self.target_website = target_website
 
+    # TODO: 求G
 
 if __name__ == '__main__':
     analyser = UniversityWebsiteAnalyser();
