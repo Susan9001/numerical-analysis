@@ -11,26 +11,26 @@ class UniversityWebsiteAnalyser:
     valid_url_pattern = re.compile(
         'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')  # static
 
-    def __init__(self, target_website="http://uci.edu"):
-        self.target_website = target_website
+    def __init__(self, target_website="https://uci.edu"):
+        self.target_website = "http://"+target_website.split("://")[1].strip()
 
-    def get_all_url_on_page(self, curr_url):
+    def get_all_url_on_page(self, curr_url:str):
         response = None
         try:
             response = requests.get(curr_url)
         except:
             return None
-        else:
-            time.sleep(0.5)
         page_soup = BeautifulSoup(response.content, 'html.parser')
         url_list = []
         link_list = page_soup.find_all('a')
         for link in link_list:
-            link = str(link.get('href'))
+            link = str(link.get('href')).strip("/")
             if re.match(UniversityWebsiteAnalyser.valid_url_pattern, link):
+                if (link.startswith("https")):
+                    link = "http://"+link.split("://")[1] # unitize: https=>http
                 url_list.append(link)
         # print(url_list)
-        return url_list
+        return list(set(url_list))
 
     def set_target_website(self, target_website):
         self.target_website = target_website
@@ -48,29 +48,24 @@ class UniversityWebsiteAnalyser:
                 continue
             m = len(new_url_list)
             for j in range(m):
-                if k >= n:
-                    break
-                try: # link to a url appeared before
+                try: # link to a url that appeared before
                     pos = all_url_list.index(new_url_list[j])
                 except ValueError as e: # link to a new url
+                    if k >= n:
+                        continue
                     A[i][k] = 1
                     all_url_list[k] = new_url_list[j]
                     k += 1
                 else:
                     A[i][pos] = 1
-            with open("./urls.json", "w") as f:
-                json.dump(all_url_list, f)
-            with open("./A.json", "w") as f:
-                json.dump(A, f)
+            print("ok! no. %d: %s " % (i, all_url_list[i]), end="")
+            print(A[i])
         return (all_url_list, A)
 
 
 if __name__ == '__main__':
     analyser = UniversityWebsiteAnalyser()
-    (urls, A) = analyser.get_new_adj_matrix(300)
-    print(urls)
-    print(A)
-    with open("./urls.json", "w") as f:
-        json.dump(urls, f)
-    with open("./A.json", "w") as f:
-        json.dump(A, f)
+    (urls, A) = analyser.get_new_adj_matrix()
+    url_adj_dict = dict(zip(urls, A))
+    with open("adj_dict.json", "w") as f:
+        json.dump(url_adj_dict, f)
