@@ -1,11 +1,14 @@
+# !/usr/bin/python
+# -*- coding: utf-8 -*-
+
 import re
 import requests
-import matplotlib as plt
 import numpy as np
-import time
+from matplotlib import pyplot as plt
 import json
 import datetime
 from bs4 import BeautifulSoup
+from collections import OrderedDict
 
 
 class UniversityWebsiteAnalyser:
@@ -48,7 +51,6 @@ class UniversityWebsiteAnalyser:
         all_url_list[0] = self.target_website
         k = 1 # url index in all_url_list currently
         error = [0 for _ in range(n)] # 1--urls that birngs error in method get; 0--normal
-
         for i in range(n):
             if i >= n:
                 break  # when all url is done
@@ -75,7 +77,6 @@ class UniversityWebsiteAnalyser:
                     A[i][pos] = 1
             print("done!", end=" ")
             print(A[i])
-
         # to exclude erroneous urls
         res_dict = {"url_list": [], "adj_matrix": [] }
         for i in range(n):
@@ -89,19 +90,76 @@ class UniversityWebsiteAnalyser:
                 res_dict["adj_matrix"][-1].append(A[i][j])
         return res_dict
 
+    def get_G(self, adj_matrix: list, a=0.85) ->np.array:
+        n = len(adj_matrix)
+        G = np.array(adj_matrix, dtype=np.float)
+        for j in range(n):
+            if 1 in G[:, j]:
+                G[:, j] = a * (G[:, j] / np.sum(G[:, j]))
+            else:
+                G[:, j] = 0
+        G += (1-a) / n
+        return G
+
+    def power_iteration_G(self, G) -> list:
+        '''get rank_score through POWER ITERATION'''
+        n = len(G)
+        x = np.zeros(n)
+        x[0] = 1
+        x = x.reshape(-1, 1)
+        for i in range(n):
+            x = np.dot(G, x)
+        return x.reshape(1, -1).tolist()[0]
+
+    def get_top_pages(self, url_list:list, rank_score:list, n=20)->OrderedDict:
+        '''res: [(url1, score1), (url2, score2), ..., (urln, scoren)]'''
+        if len(url_list) != len(rank_score):
+            return None
+        n = min(len(url_list), n)
+        return OrderedDict(sorted(zip(url_list, rank_score), key=lambda x: x[1], reverse=True)[:n])
+
+    def show_adj(self, adj_matrix):
+        x = []
+        y = []
+        n = len(adj_matrix)
+        for i in range(n):
+            for j in range(n):
+                if adj_matrix[i][j] == 1:
+                    x.append(i)
+                    y.append(j)
+        plt.scatter(x, y, s=1)
+        plt.savefig("adj.png")
+        plt.show()
+
+    # def get_top(self):
+
 
 if __name__ == '__main__':
-    # analyser = UniversityWebsiteAnalyser()
+    analyser = UniversityWebsiteAnalyser()
+
     # res_dict = analyser.get_new_adj_matrix(500)
     # with open("adj_dict.json", "w", encoding='utf-8') as f:
     #     json.dump(res_dict, f)
 
-    res_dict = {}
-    with open("adj_dict.json", "r", encoding='utf-8') as f:
-        res_dict =json.load(f)
-    url_list = res_dict.get("url_list")
-    adj_matrix = res_dict.get("adj_matrix")
-    for i in range(len(url_list)):
-        print("%s: %d" %(url_list[i], sum(adj_matrix[i])))
-    print(res_dict)
+    # res_dict = {}
+    # with open("adj_dict.json", "r", encoding='utf-8') as f:
+    #     res_dict = json.load(f)
+    # adj_matrix = res_dict.get("adj_matrix")
+    # analyser.show_adj(adj_matrix)
+    # G = analyser.get_G(adj_matrix)
+    # with open("Google_matrix.json", "w", encoding='utf-8') as f:
+    #     json.dump(G.tolist(), f)
+
+    # with open("Google_matrix.json", "r", encoding='utf-8') as f:
+    #     G = json.load(f)
+    # rank_score = analyser.power_iteration_G(G)
+    # with open("adj_dict.json", "r", encoding='utf-8') as f:
+    #     url_list = json.load(f).get("url_list")
+    # top20_urls = analyser.get_top_pages(url_list, rank_score, 20)
+    # with open("top20_urls.json", "w", encoding='utf-8') as f:
+    #     json.dump(top20_urls, f)
+
+
+
+
 
