@@ -1,6 +1,8 @@
 # !/usr/bin/python
 # -*- coding: utf-8 -*-
 
+'''To analyze web pages from UCI(University of California, Irvine)'''
+
 import re
 import requests
 import numpy as np
@@ -10,8 +12,7 @@ import datetime
 from bs4 import BeautifulSoup
 from collections import OrderedDict
 
-
-class UniversityWebsiteAnalyser:
+class WebPageAnalyser:
     valid_url_pattern = re.compile(
         "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+")  # static
 
@@ -35,7 +36,7 @@ class UniversityWebsiteAnalyser:
         link_list = page_soup.find_all('a')
         for link in link_list:
             link = str(link.get('href')).strip("/")
-            if re.match(UniversityWebsiteAnalyser.valid_url_pattern, link):
+            if re.match(WebPageAnalyser.valid_url_pattern, link):
                 if (link.startswith("https")):
                     link = "http://"+link.split("://")[1] # unitize: https=>http
                 url_list.append(link)
@@ -131,34 +132,26 @@ class UniversityWebsiteAnalyser:
         plt.savefig("adj.png")
         plt.show()
 
-    # def get_top(self):
-
 
 if __name__ == '__main__':
-    analyser = UniversityWebsiteAnalyser()
+    analyser = WebPageAnalyser()
 
-    # res_dict = analyser.get_new_adj_matrix(500)
-    # with open("adj_dict.json", "w", encoding='utf-8') as f:
-    #     json.dump(res_dict, f)
+    res_dict = analyser.get_new_adj_matrix(500)
+    with open("adj_dict.json", "w", encoding='utf-8') as f:
+        json.dump(res_dict, f)
 
-    # res_dict = {}
-    # with open("adj_dict.json", "r", encoding='utf-8') as f:
-    #     res_dict = json.load(f)
-    # adj_matrix = res_dict.get("adj_matrix")
-    # analyser.show_adj(adj_matrix)
-    # G = analyser.get_G(adj_matrix)
-    # with open("Google_matrix.json", "w", encoding='utf-8') as f:
-    #     json.dump(G.tolist(), f)
+    res_dict = {}
+    adj_matrix = res_dict.get("adj_matrix")
+    analyser.show_adj(adj_matrix)
+    G = analyser.get_G(adj_matrix)
+    with open("Google_matrix.json", "w", encoding='utf-8') as f:
+        json.dump(G.tolist(), f)
 
-    # with open("Google_matrix.json", "r", encoding='utf-8') as f:
-    #     G = json.load(f)
-    # rank_score = analyser.power_iteration_G(G)
-    # with open("adj_dict.json", "r", encoding='utf-8') as f:
-    #     url_list = json.load(f).get("url_list")
-    # top20_urls = analyser.get_top_pages(url_list, rank_score, 20)
-    # with open("top20_urls.json", "w", encoding='utf-8') as f:
-    #     json.dump(top20_urls, f)
-
+    rank_score = analyser.power_iteration_G(G)
+    url_list = res_dict.get("url_list")
+    top20_urls = analyser.get_top_pages(url_list, rank_score, 20)
+    with open("top20_urls.json", "w", encoding='utf-8') as f:
+        json.dump(top20_urls, f)
 
 
 
